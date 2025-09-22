@@ -22,3 +22,4 @@ export const registerUser = async (email, password) => {
         return { success: false, message: e.message || "Error de red" };
     }
 }
+export default registerUser;
