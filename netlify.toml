@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  CI = "false"
 
 # Fallback SPA: envía todas las rutas al index.html
 [[redirects]]
