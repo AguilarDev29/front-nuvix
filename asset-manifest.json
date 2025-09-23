@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/static/css/main.5f916872.css",
+    "main.js": "/static/js/main.bdeda532.js",
+    "static/js/453.c1894eea.chunk.js": "/static/js/453.c1894eea.chunk.js",
+    "static/media/logo2-Photoroom.png": "/static/media/logo2-Photoroom.cfc9e3b9a5abed044688.png",
+    "index.html": "/index.html",
+    "main.5f916872.css.map": "/static/css/main.5f916872.css.map",
+    "main.bdeda532.js.map": "/static/js/main.bdeda532.js.map",
+    "453.c1894eea.chunk.js.map": "/static/js/453.c1894eea.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5f916872.css",
+    "static/js/main.bdeda532.js"
+  ]
+}
