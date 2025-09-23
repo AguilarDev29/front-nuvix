@@ -14,7 +14,7 @@ function App() {
     const [eventos, setEventos] = useState([]);
     const navigate = useNavigate();
     if(localStorage.getItem("token") === null){
-        navigator.push("/login")
+        navigate("/login")
     }else navigate("/scanner")
     console.log(
         "Token: " + localStorage.getItem("token")
