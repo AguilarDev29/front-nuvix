@@ -20,7 +20,7 @@
 }
 
 input {
-  width: 100%;
+  width: 90%;
   padding: 0.8rem;
   margin: 0.5rem 0;
   border: 1px solid var(--primary);
@@ -31,7 +31,7 @@ input {
 }
 
 button {
-  width: 100%;
+  width: 80%;
   padding: 0.9rem;
   margin-top: 0.8rem;
   background: var(--primary);
@@ -47,6 +47,11 @@ button {
 button:hover {
   background: var(--primary-hover);
   transform: scale(1.05);
+}
+
+.links-container {
+    display: flex;
+    flex-direction: column;
 }
 
 .link {

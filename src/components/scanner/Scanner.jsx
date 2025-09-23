@@ -113,9 +113,6 @@ export const Scanner = ({eventos = [], setEventos}) => {
             >
                 <div className="card">
                     <h2>Escáner QR</h2>
-                    <label htmlFor="select-evento" className="label">
-                        Selecciona un evento:
-                    </label>
                     <select
                         id="select-evento"
                         value={eventoSeleccionado}

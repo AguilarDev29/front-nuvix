@@ -1,22 +1,23 @@
 import {useState} from "react";
-import {Link} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {resetPassword} from "./resetPassword";
-import './ResetPassword.css';
+import '../login/Login.css';
 
 export function ResetPassword() {
-    const [token, setToken] = useState("");
+    const {state} = useLocation();
+    const [email] = useState(state?.email ?? "")
     const [newPassword, setNewPassword] = useState("");
     const [message, setMessage] = useState("");
-
-    const handleReset = (e) => {
+    const navigate = useNavigate();
+    const handleReset = async (e) => {
         e.preventDefault();
-        /*const result = resetPassword(, token, newPassword);
-        if (result.success) {
-            setMessage(" Contraseña cambiada con éxito");
-            navigator.push("/login");
-        } else {
-            setMessage(" " + result.message);
-        }*/
+        const result = await resetPassword(email, newPassword);
+
+        if(!result.success) setMessage("Error al cambiar contraseña");
+        else{
+            setMessage("Contraseña cambiada con éxito");
+            navigate("/login");
+        }
     };
 
     return (
@@ -24,13 +25,6 @@ export function ResetPassword() {
             <div className="form-card">
                 <h2>Restablecer contraseña</h2>
                 <form onSubmit={handleReset}>
-                    <input
-                        type="text"
-                        placeholder="Código recibido"
-                        value={token}
-                        onChange={(e) => setToken(e.target.value)}
-                        required
-                    />
                     <input
                         type="password"
                         placeholder="Nueva contraseña"

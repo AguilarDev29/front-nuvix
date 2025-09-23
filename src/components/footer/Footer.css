@@ -79,3 +79,22 @@
     color: #eaeaea;
 }
 
+@media (max-width: 768px){
+    .footer {
+        padding: 1rem;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .footer-title{
+        text-align: center;
+    }
+
+    .footer-text {
+        text-align: center;
+    }
+}

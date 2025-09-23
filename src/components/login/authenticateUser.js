@@ -11,9 +11,8 @@ export const authenticateUser = async (email, password) => {
             })
         });
         const data = await response.json();
-        if (!response.ok) {
-            return { success: false, message: data.message || "Error al autenticar el usuario" };
-        }
+        if (!response.ok) return { success: false, message: data.message || "Error al autenticar el usuario" };
+
         return { success: true, token: data.token, message: "Login exitoso" };
     } catch (e) {
         return { success: false, message: e.message || "Error de red" };

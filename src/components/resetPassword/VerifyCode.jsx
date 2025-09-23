@@ -1,21 +1,23 @@
 import {useState} from "react";
-import {Link, useNavigate} from "react-router-dom";
-import {forgotPassword} from './forgotPassword.js';
+import {Link, useLocation, useNavigate} from "react-router-dom";
+import {verifyCode} from "./verifyCode";
 import '../login/Login.css';
-
-export function ForgotPassword() {
-    const [email, setEmail] = useState("");
+export function VerifyCode() {
+    const {state} = useLocation();
+    const [email] = useState(state?.email ?? "");
     const [message, setMessage] = useState("");
+    const [code, setCode] = useState("");
     const navigate = useNavigate();
-    const handleForgot = async (e) => {
+    const handleVerify = async (e) => {
         e.preventDefault();
-        const result = await forgotPassword(email);
-        if (!result.success){
-            setMessage("Error al enviar email");
-        } else {
-            setMessage("Su código fue enviado a su casilla de email");
-            navigate("/verify-code", {state: {email}})
+        const result = await verifyCode(email, code);
+
+        if(!result.success) setMessage("Código incorrecto");
+        else{
+            setMessage("Código correcto")
+            navigate("/reset-password", {state: {email}});
         }
+
     };
 
     return (
@@ -23,13 +25,12 @@ export function ForgotPassword() {
             <div className="auth-container">
                 <div className="form-card">
                     <h2>Olvidaste tu contraseña</h2>
-                    <form onSubmit={handleForgot}>
+                    <form onSubmit={handleVerify}>
                         <input
-                            type="email"
-                            placeholder="Ingresa tu correo"
-                            name="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            type="text"
+                            placeholder="Ingresa su código de verificación"
+                            value={code}
+                            onChange={(e) => setCode(e.target.value)}
                             required
                         />
                         <button type="submit">Enviar código</button>

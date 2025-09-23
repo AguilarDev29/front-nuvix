@@ -1,12 +1,14 @@
+import React, { useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import NuvixLogo from "../logo2-Photoroom.png";
+import NuvixLogo from "../../img/logo2-Photoroom.png";
 import './Navbar.css';
 
-export function Navbar(){
+export const Navbar = React.memo(() => {
     const navigate = useNavigate();
+    const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         if (window.stopScannerGlobal && typeof window.stopScannerGlobal === "function") {
             try {
                 await window.stopScannerGlobal();
@@ -17,7 +19,11 @@ export function Navbar(){
         alert("Sesión cerrada. Redirigiendo a la página de inicio.");
         localStorage.removeItem("token");
         navigate("/");
-    };
+    }, [navigate]);
+
+    const toggleMobileMenu = useCallback(() => {
+        setMobileMenuOpen(prev => !prev);
+    }, []);
 
     return (
         <motion.nav
@@ -34,13 +40,16 @@ export function Navbar(){
                 >
                     <Link to="/" className="no-underline">
                         <div className="logo-container">
-
                             <img src={NuvixLogo} alt="Nuvix Logo" className="logo-icon-img" />
                         </div>
                     </Link>
                 </motion.div>
 
-                <ul className="navbar-links">
+                <div className="mobile-menu-icon" onClick={toggleMobileMenu}>
+                    &#9776;
+                </div>
+
+                <ul className={`navbar-links ${isMobileMenuOpen ? "active" : ""}`}>
                     <li>
                         <Link to="/scanner" className="nav-link">Escáner</Link>
                     </li>
@@ -59,4 +68,4 @@ export function Navbar(){
             </div>
         </motion.nav>
     );
-}
+});
