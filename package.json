@@ -2,6 +2,7 @@
   "name": "front-nuvix",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://AguilarDev29.github.io/front-nuvix",
   "dependencies": {
     "@mercadopago/sdk-react": "^1.0.6",
     "@testing-library/dom": "^10.4.1",
@@ -44,9 +45,6 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
-    ],
-    "homepage": [
-      "https://AguilarDev29.github.io/front-nuvix"
     ]
   },
   "devDependencies": {
