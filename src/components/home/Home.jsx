@@ -2,12 +2,11 @@ import './Home.css';
 import {loadSlim} from "tsparticles-slim";
 import Particles from "react-tsparticles";
 import {motion} from "framer-motion";
-import {Link, useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import "./Home.css"
 
 export function Home() {
 
-    const navigate = useNavigate();
     // Configuración de las partículas
     const particlesInit = async (main) => {
         await loadSlim(main);

@@ -3,8 +3,8 @@ import {Link} from "react-router-dom";
 
 export function ForgotPassword() {
     const [email, setEmail] = useState("");
-    const [token, setToken] = useState(null);
-    const [message, setMessage] = useState("");
+    const [token] = useState(null);
+    const [message] = useState("");
 
     const handleForgot = (e) => {
         e.preventDefault();
