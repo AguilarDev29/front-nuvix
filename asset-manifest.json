@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/front-nuvix/static/css/main.5f916872.css",
-    "main.js": "/front-nuvix/static/js/main.47fa8d36.js",
+    "main.js": "/front-nuvix/static/js/main.58c09367.js",
     "static/js/453.c1894eea.chunk.js": "/front-nuvix/static/js/453.c1894eea.chunk.js",
     "static/media/logo2-Photoroom.png": "/front-nuvix/static/media/logo2-Photoroom.cfc9e3b9a5abed044688.png",
     "index.html": "/front-nuvix/index.html",
     "main.5f916872.css.map": "/front-nuvix/static/css/main.5f916872.css.map",
-    "main.47fa8d36.js.map": "/front-nuvix/static/js/main.47fa8d36.js.map",
+    "main.58c09367.js.map": "/front-nuvix/static/js/main.58c09367.js.map",
     "453.c1894eea.chunk.js.map": "/front-nuvix/static/js/453.c1894eea.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.5f916872.css",
-    "static/js/main.47fa8d36.js"
+    "static/js/main.58c09367.js"
   ]
 }
