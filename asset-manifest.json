@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/front-nuvix/static/css/main.3bfa5e5c.css",
-    "main.js": "/front-nuvix/static/js/main.ead8c6c7.js",
+    "main.css": "/front-nuvix/static/css/main.2ef965d2.css",
+    "main.js": "/front-nuvix/static/js/main.ccc0ba76.js",
     "static/js/453.c1894eea.chunk.js": "/front-nuvix/static/js/453.c1894eea.chunk.js",
     "static/media/logo2-Photoroom.png": "/front-nuvix/static/media/logo2-Photoroom.cfc9e3b9a5abed044688.png",
     "index.html": "/front-nuvix/index.html",
-    "main.3bfa5e5c.css.map": "/front-nuvix/static/css/main.3bfa5e5c.css.map",
-    "main.ead8c6c7.js.map": "/front-nuvix/static/js/main.ead8c6c7.js.map",
+    "main.2ef965d2.css.map": "/front-nuvix/static/css/main.2ef965d2.css.map",
+    "main.ccc0ba76.js.map": "/front-nuvix/static/js/main.ccc0ba76.js.map",
     "453.c1894eea.chunk.js.map": "/front-nuvix/static/js/453.c1894eea.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.3bfa5e5c.css",
-    "static/js/main.ead8c6c7.js"
+    "static/css/main.2ef965d2.css",
+    "static/js/main.ccc0ba76.js"
   ]
 }
