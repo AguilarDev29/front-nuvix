@@ -78,8 +78,9 @@
 }
 
 .nav-link:hover {
+    padding: .8rem;
     color: #1A1F3B; /* azul oscuro */
-    background-color: rgba(123, 47, 247, 0.2); /* violeta translúcido */
+    background-color: rgba(123, 47, 247, 0.5); /* violeta translúcido */
     transform: translateY(-2px);
 }
 
@@ -93,7 +94,7 @@
 }
 
 .logout-btn:hover {
-    background-color: #F2E96B; /* cian neón en hover */
+    background-color: #00F5D4; /* cian neón en hover */
     color: #1A1F3B; /* contraste fuerte con el fondo */
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
@@ -147,6 +148,7 @@
     .logout-btn {
         width: auto;
         margin: 1rem auto;
+        padding: 1rem;
     }
 
     .mobile-menu-icon {

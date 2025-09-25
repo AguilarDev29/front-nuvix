@@ -45,6 +45,7 @@ export function Records() {
 
                 <div className="records-search">
                     <input
+                        className="input-search"
                         type="text"
                         placeholder="Buscar por nombre o fecha (YYYY-MM-DD)"
                         value={search}

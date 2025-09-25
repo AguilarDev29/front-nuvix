@@ -24,20 +24,17 @@ function App() {
         const protectedPaths = ["/scanner", "/events", "/records", "/payment"];
         const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password"]; 
 
-        // If no token and trying to access protected routes -> go to login
         if (!token && protectedPaths.includes(path)) {
             if (path !== "/login") navigate("/login", { replace: true });
             return;
         }
 
-        // If token exists and user is on a public page like login, redirect to scanner
         if (token && publicPaths.includes(path)) {
             if (path !== "/scanner") {
                 navigate("/scanner", { replace: true });
             }
             return;
         }
-        // Otherwise, do nothing and allow navigation
     }, [location, navigate]);
 
     return (

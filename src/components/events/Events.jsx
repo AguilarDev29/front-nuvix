@@ -1,19 +1,22 @@
 import "./Events.css";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import {motion} from "framer-motion";
 import Footer from "../footer/Footer";
 import {Navbar} from "../navbar/Navbar";
+import "./handleEvents";
+import {createEvento, createParticipantsFromList, uploadPDF, uploadXLSX, finishEvento, listarEventos} from "./handleEvents";
 
 export function Events({eventos, setEventos}) {
     const [registrarEventoVisible, setRegistrarEventoVisible] = useState(false);
     const [nuevoEvento, setNuevoEvento] = useState("");
+    const [objEvento, setObjEvento] = useState({});
+    const [fecha, setFecha] = useState("");
     const [dataFile, setDataFile] = useState(null);
     const [pdfFile, setPdfFile] = useState(null);
     const [parsedData, setParsedData] = useState(null);
     const [filtroEvento, setFiltroEvento] = useState("");
-
     const parseCSV = (file) => {
         Papa.parse(file, {
             header: true,
@@ -38,10 +41,59 @@ export function Events({eventos, setEventos}) {
             const workbook = XLSX.read(data, {type: "array"});
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
-            const data_ = jsonData.filter(row => row.id && row.nombre);
+            // Extraer encabezados reales de la primera fila
+            const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1, defval: ""});
+            const headerRow = rows[0] || [];
+            // Normalización robusta (quita tildes y espacios, conserva letras)
+            const normalize = str => str && str.toString().trim().toLowerCase().replace(/\s+/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const requiredColumnsRaw = ["Apellido", "Nombre", "DNI", "Email", "Telefono"];
+            const requiredColumns = requiredColumnsRaw.map(normalize);
+            const normalizedHeaders = headerRow.map(normalize);
+            // Mapeo de encabezados normalizados a reales
+            const headerMap = {};
+            normalizedHeaders.forEach((h, i) => { headerMap[h] = headerRow[i]; });
+            // Validar encabezados
+            const missingColumns = requiredColumns.filter(col => !normalizedHeaders.includes(col));
+            if (missingColumns.length > 0) {
+                // Mostrar los nombres normalizados faltantes y los reales detectados
+                alert(`El archivo XLSX debe contener las columnas: ${requiredColumnsRaw.join(", ")}\nDetectadas: ${headerRow.join(", ")}\nFaltan (normalizados): ${missingColumns.join(", ")}`);
+                setParsedData(null);
+                setDataFile(null);
+                return;
+            }
+            // Mapear los nombres requeridos a los reales usando el valor normalizado
+            const colMap = {};
+            requiredColumns.forEach((col, i) => {
+                if (headerMap[col]) colMap[requiredColumnsRaw[i]] = headerMap[col];
+            });
+            // Definir qué columnas son obligatorias (Telefono opcional)
+            const requiredColumnsMandatory = ["Apellido", "Nombre", "DNI", "Email"];
+            // Convertir el resto de filas a objetos usando los encabezados reales
+            const dataRows = rows.slice(1)
+                .filter(row => row.length > 0 && row.some(cell => cell !== "" && cell !== null && cell !== undefined))
+                .map(row => {
+                    // Rellenar la fila con celdas vacías si faltan columnas al final
+                    if (row.length < headerRow.length) {
+                        return [...row, ...Array(headerRow.length - row.length).fill("")];
+                    }
+                    return row;
+                });
+            // Mostrar en consola las filas leídas
+            const data_ = dataRows.map(row => {
+                const obj = {};
+                Object.entries(colMap).forEach(([key, realCol]) => {
+                    const idx = headerRow.indexOf(realCol);
+                    obj[realCol] = row[idx] !== undefined ? row[idx] : "";
+                });
+                return obj;
+            }).filter(row => requiredColumnsMandatory.every(col => {
+                const realCol = colMap[col];
+                // Permitir espacios vacíos pero no celdas realmente vacías
+                return row[realCol] !== undefined && row[realCol] !== null && row[realCol].toString().trim() !== "";
+            }));
+            // Mostrar en consola las filas válidas
             if (data_.length === 0) {
-                alert("El archivo XLSX debe contener las columnas 'id' y 'nombre'.");
+                alert(`El archivo XLSX no contiene filas válidas con todos los campos requeridos.\nFilas leídas: ${dataRows.length}`);
                 setParsedData(null);
                 setDataFile(null);
             } else {
@@ -51,15 +103,18 @@ export function Events({eventos, setEventos}) {
         reader.readAsArrayBuffer(file);
     };
 
-    const handleFileChange = (file) => {
+    const handleFileChange = async (file) => {
         if (!file) return;
-        setDataFile(file);
         if (file.name.endsWith(".csv")) parseCSV(file);
-        else if (file.name.endsWith(".xlsx")) parseXLSX(file);
+        else if (file.name.endsWith(".xlsx")) {
+            parseXLSX(file);
+        }
         else {
             alert("Formato no soportado. Solo se permiten .csv o .xlsx");
             setDataFile(null);
         }
+
+        setDataFile(file);
     };
 
     const handlePdfChange = (file) => {
@@ -70,10 +125,15 @@ export function Events({eventos, setEventos}) {
         setPdfFile(file);
     };
 
-    const handleConfirmarRegistro = () => {
+    const handleConfirmarRegistro = async () => {
         const nombreNormalizado = nuevoEvento.trim();
         if (!nombreNormalizado) {
             alert("Debes ingresar un nombre de evento.");
+            return;
+        }
+
+        if(!fecha) {
+            alert("Debes ingresar una fecha para el evento.");
             return;
         }
         if (eventos.some(e => e.nombre.toLowerCase() === nombreNormalizado.toLowerCase())) {
@@ -89,35 +149,94 @@ export function Events({eventos, setEventos}) {
             return;
         }
 
-        setEventos(prev => [...prev, {
-            nombre: nombreNormalizado,
-            participantes: parsedData,
-            itinerario: pdfFile,
-            asistentes: []
-        }]);
+        try {
+            const fechaISO = new Date(fecha).toISOString();
+            const eventoData = {
+                nombre: nombreNormalizado,
+                fechaEvento: fechaISO,
+                fecha: fechaISO
+            };
 
-        setNuevoEvento("");
-        setDataFile(null);
-        setPdfFile(null);
-        setParsedData(null);
-        setRegistrarEventoVisible(false);
-        alert(`Evento "${nombreNormalizado}" registrado con éxito!`);
+
+            let lista;
+            const nuevoEventoCreado = await createEvento(eventoData);
+            if (nuevoEventoCreado && nuevoEventoCreado.id) {
+                const eventoId = nuevoEventoCreado.id;
+
+                if (dataFile) {
+                    lista = await uploadXLSX(eventoId, dataFile);
+                }
+
+                if (pdfFile) {
+                    await uploadPDF(eventoId, pdfFile);
+                }
+
+                // Crear el objeto completo del nuevo evento tal como se espera en la lista
+                const eventoParaUI = {
+                    ...nuevoEventoCreado, // Datos del backend (id, nombre, etc.)
+                    listaParticipantes: lista, // La ruta del archivo XLSX devuelta por el backend
+                    participantes: [], // Inicialmente no hay participantes confirmados
+                    itinerario: pdfFile.name // O la ruta que devuelva el backend para el PDF
+                };
+
+                // Actualizar el estado de eventos de forma inmutable
+                setEventos(eventosAnteriores => [...eventosAnteriores, eventoParaUI]);
+
+                setNuevoEvento("");
+                setFecha("");
+                setDataFile(null);
+                setPdfFile(null);
+                setParsedData(null);
+                setRegistrarEventoVisible(false);
+                alert(`Evento "${nombreNormalizado}" registrado con éxito!`);
+            } else {
+                alert("Hubo un error al crear el evento. Intente nuevamente.");
+            }
+        } catch (error) {
+            console.error("Error en el registro del evento:", error);
+            alert("Hubo un error en el registro del evento. Revise la consola para más detalles.");
+        }
     };
 
-    const handleDownload = (evento) => {
-        const csv = Papa.unparse(evento.participantes);
-        const blob = new Blob([csv], {type: "text/csv;charset=utf-8;"});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.setAttribute("download", `${evento.nombre}-participantes.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    };
+    const descargarPlantilla = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            const response =
+                await fetch("https://sistemadeverificacion.onrender.com/v1/participantes/download-template", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            });
+            if (!response.ok) throw new Error("Error al descargar la plantilla");
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "plantilla-participantes.xlsx";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert("No se pudo descargar la plantilla. Intenta nuevamente más tarde.");
+        }
+    }
 
-    const eventosFiltrados = eventos.filter((evento) =>
-        evento.nombre.toLowerCase().includes(filtroEvento.toLowerCase())
-    );
+    // Usamos useEffect para cargar los eventos una sola vez cuando el componente se monta.
+    useEffect(() => {
+        const cargarEventos = async () => {
+            try {
+                const eventosObtenidos = await listarEventos();
+                console.log("Eventos obtenidos:", eventosObtenidos);
+                setEventos(eventosObtenidos || []); // Aseguramos que sea un array
+            } catch (error) {
+                console.error("Error al cargar los eventos:", error);
+                alert(`No se pudieron cargar los eventos: ${error.message}`);
+            }
+        };
+        cargarEventos();
+    }, [setEventos]); // El efecto se ejecuta si setEventos cambia (lo cual no debería pasar)
 
     return (
         <>
@@ -133,7 +252,7 @@ export function Events({eventos, setEventos}) {
                     <h2>Gestión de Eventos</h2>
                     <button
                         onClick={() => setRegistrarEventoVisible(!registrarEventoVisible)}
-                        className="btn"
+                        className={"btn" + (registrarEventoVisible ? " cancel" : "")}
                     >
                         {registrarEventoVisible ? "Cancelar" : "Registrar nuevo evento"}
                     </button>
@@ -145,14 +264,29 @@ export function Events({eventos, setEventos}) {
                             animate={{opacity: 1, y: 0}}
                             transition={{duration: 0.5}}
                         >
-                            <input
-                                type="text"
-                                placeholder="Nombre del evento"
-                                value={nuevoEvento}
-                                onChange={(e) => setNuevoEvento(e.target.value)}
-                                className="input-field"
-                            />
+                            <label className="label" htmlFor={ "nombre"}>
+                                Nombre del evento
+                                <input
+                                    name="nombre"
+                                    type="text"
+                                    placeholder="Evento..."
+                                    value={nuevoEvento}
+                                    onChange={(e) => setNuevoEvento(e.target.value)}
+                                    className="input-field"
+                                />
+                            </label>
 
+                            <label className="label" htmlFor={"fecha"}>
+                                Fecha del evento
+                                <input type={"date"} className="input-field" style={{marginBottom: "10px"}}
+                                       onChange={(e) => setFecha(e.target.value)}
+                                        required={true}
+                                />
+
+                            </label>
+                                <button className="btn" onClick={descargarPlantilla}>
+                                    Descarga plantilla de participantes
+                                </button>
                             <label className="file-input-label">
                                 Seleccionar archivo CSV o XLSX (participantes)
                                 <input
@@ -193,8 +327,8 @@ export function Events({eventos, setEventos}) {
 
                     <h3>Eventos Registrados</h3>
                     <ul className="eventos-list">
-                        {eventosFiltrados.length > 0 ? (
-                            eventosFiltrados.map((ev, index) => (
+                        {eventos.length > 0 ? (
+                            eventos.map((ev, index) => (
                                 <motion.li
                                     key={index}
                                     className="event-item"
@@ -206,22 +340,51 @@ export function Events({eventos, setEventos}) {
                                         stiffness: 100,
                                     }}
                                 >
-                                    <span>{ev.nombre} ({ev.participantes.length} participantes)</span>
+                                    <span className="event-text">
+                                        {ev.nombre} ({(() => {
+                                            // Lógica segura para mostrar el número de participantes
+                                            const count = ev.participantes?.length || 0;
+                                            if (count === 0) return "Envia los emails para registrar los participantes";
+                                            if (count === 1) return "1 participante";
+                                            return `${count} participantes`;
+                                        })()})
+                                    </span>
                                     <button
-                                        onClick={() => handleDownload(ev)}
-                                        className="btn download-btn"
+                                        onClick={async () => {
+                                            // Manejo de error y comprobación de la propiedad necesaria
+                                            if (!ev.listaParticipantes) {
+                                                alert("Error: No se encontró la ruta del archivo de participantes para este evento.");
+                                                return;
+                                            }
+                                            try {
+                                                await createParticipantsFromList(ev.id, ev.listaParticipantes);
+                                                alert("¡Proceso de envío de invitaciones iniciado con éxito!");
+                                            } catch (error) {
+                                                alert(`Error al enviar invitaciones: ${error.message}`);
+                                            }
+                                        }}
+                                        className={`btn ${(ev.participantes?.length || 0) === 0 ? "btn-pending" : ""}`}
                                     >
-                                        Descargar CSV
+                                        {ev.participantes !== undefined && ev.participantes.length > 0 ? "Reenviar Invitaciones": "Enviar invitaciones"}
                                     </button>
-                                    {ev.itinerario && (
-                                        <a
-                                            href={URL.createObjectURL(ev.itinerario)}
-                                            download={`${ev.nombre}-itinerario.pdf`}
-                                            className="btn download-btn"
-                                        >
-                                            Descargar PDF
-                                        </a>
-                                    )}
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                await finishEvento(ev.id);
+                                                // Actualiza el estado para remover el evento de la UI
+                                                setEventos(eventosAnteriores =>
+                                                    eventosAnteriores.filter(evento => evento.id !== ev.id)
+                                                );
+                                                alert("Evento finalizado con éxito.");
+                                            } catch (error) {
+                                                alert(`Error al finalizar el evento: ${error.message}`);
+                                            }
+                                        }}
+                                        className="btn"
+                                    >
+                                        Finalizar evento
+                                    </button>
+
                                 </motion.li>
                             ))
                         ) : (

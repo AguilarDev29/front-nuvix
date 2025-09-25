@@ -103,3 +103,14 @@ h2 {
   text-align: center;
   font-weight: bold;
 }
+
+@media (max-width: 768px) {
+
+    .card {
+        width: 80%;
+    }
+    .qr-scan-window {
+        width: 200px;
+        height: 200px;
+    }
+}

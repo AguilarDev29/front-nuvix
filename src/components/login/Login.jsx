@@ -10,7 +10,6 @@ export function Login() {
     const navigate = useNavigate();
     const handleLogin = async (e) => {
         e.preventDefault();
-        console.log("log de prueba");
         const result = await authenticateUser(email, password);
 
         if(!result.success)
