@@ -118,6 +118,10 @@ h3 {
     }
 }
 
+.btn-disabled {
+    color: red;
+}
+
 @media (max-width: 768px) {
     .registro-evento-form .btn {
         width: 100%;

@@ -41,7 +41,7 @@ export function Records() {
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
             >
-                <h1>Registros de Asistentes</h1>
+                <h1>Registros de Participantes</h1>
 
                 <div className="records-search">
                     <input

@@ -13,9 +13,8 @@ export function Login() {
         const result = await authenticateUser(email, password);
 
         if(!result.success)
-            setMessage(result.message);
+            setMessage("Error al autenticar el usuario");
         else{
-            setMessage("Login exitoso");
             localStorage.setItem("token", result.token);
             navigate("/scanner");
         }

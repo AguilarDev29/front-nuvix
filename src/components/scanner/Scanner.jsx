@@ -4,14 +4,35 @@ import {Html5Qrcode} from "html5-qrcode";
 import { motion } from "framer-motion";
 import {Navbar} from "../navbar/Navbar";
 import Footer from "../footer/Footer";
+import {verifyEntrada} from "./handleScanner";
+import {listarEventos} from "../events/handleEvents";
 
 export const Scanner = ({eventos = [], setEventos}) => {
-    const [scannedResult, setScannedResult] = useState(null);
     const [started, setStarted] = useState(false);
     const [eventoSeleccionado, setEventoSeleccionado] = useState("");
+    const [verifiedParticipant, setVerifiedParticipant] = useState(null); // Estado para el participante verificado
+    const [scanStatus, setScanStatus] = useState({ type: '', message: '' }); // Estado para mensajes de feedback
     const qrCodeRegionRef = useRef(null);
     const html5QrCodeRef = useRef(null);
     const scannerActiveRef = useRef(false);
+    // Usamos useEffect para cargar los eventos desde la API cuando el componente se monta.
+    useEffect(() => {
+        const cargarEventos = async () => {
+            try {
+                const eventosObtenidos = await listarEventos();
+                setEventos(eventosObtenidos || []); // Actualiza el estado con los datos
+            } catch (error) {
+                console.error("Error al cargar eventos en el scanner:", error);
+            }
+        };
+        cargarEventos();
+    }, [setEventos]); // El efecto se ejecuta si la función setEventos cambia.
+
+    // Función para limpiar el estado del participante y los mensajes
+    const resetScanResult = () => {
+        setVerifiedParticipant(null);
+        setScanStatus({ type: '', message: '' });
+    };
 
     const stopScanner = async () => {
         if (!scannerActiveRef.current || !html5QrCodeRef.current) return;
@@ -46,53 +67,44 @@ export const Scanner = ({eventos = [], setEventos}) => {
             return;
         }
 
-        const eventoActual = eventos.find(ev => ev.nombre === eventoSeleccionado);
-        if (!eventoActual) {
-            alert("Error: No se pudo encontrar el evento seleccionado.");
-            return;
-        }
+        resetScanResult(); // Limpia resultados anteriores antes de un nuevo escaneo
 
         stopScanner().finally(() => {
             const config = { fps: 10, qrbox: 250 };
             const html5QrCode = new Html5Qrcode(qrCodeRegionRef.current.id);
             html5QrCodeRef.current = html5QrCode;
 
-            html5QrCode
-                .start(
-                    { facingMode: "environment" },
-                    config,
-                    (decodedText) => {
-                        stopScanner();
-                        setScannedResult(`ID Escaneado: ${decodedText}`);
+            const qrCodeSuccessCallback = async (decodedText) => {
+                // Detener el escáner inmediatamente para evitar múltiples lecturas
+                stopScanner();
 
-                        const idParticipante = decodedText.trim();
-                        const participante = eventoActual.participantes.find(p => p.id.toString() === idParticipante);
+                try {
+                    // 2. Enviar el código al backend y esperar la respuesta
+                    const response = await verifyEntrada(decodedText);
 
-                        if (!participante) {
-                            alert(`Participante con ID ${idParticipante} no encontrado en la lista del evento.`);
-                            return;
-                        }
-
-                        const yaRegistrado = eventoActual.asistentes.some(a => a.id.toString() === idParticipante);
-
-                        if (yaRegistrado) {
-                            alert(`${participante.nombre} ya ha sido registrado como asistente.`);
-                            return;
-                        }
-
-                        setEventos(prevEventos => prevEventos.map(ev => {
-                            if (ev.nombre === eventoSeleccionado) {
-                                return { ...ev, asistentes: [...ev.asistentes, participante] };
-                            }
-                            return ev;
-                        }));
-
-                        alert(`${participante.nombre} registrado como asistente con éxito.`);
-                    },
-                    (errorMessage) => {
-                        // Silenciado para no llenar la consola con errores de "QR not found"
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.message || `Error ${response.status}`);
                     }
-                )
+
+                    // 3. Si es OK, obtener los datos del participante
+                    const participantData = await response.json();
+
+                    // 4. Guardar los datos en el estado y mostrar mensaje de éxito
+                    setVerifiedParticipant({
+                        participante: participantData.participante,
+                        estadoEntrada: participantData.estado
+                    });
+                    setScanStatus({ type: 'success', message: '¡Acceso verificado!' });
+
+                } catch (error) {
+                    // 5. Si falla, mostrar mensaje de error
+                    setScanStatus({ type: 'error', message: error.message || 'Código QR no válido o expirado.' });
+                    setVerifiedParticipant(null);
+                }
+            };
+
+            html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
                 .then(() => {
                     scannerActiveRef.current = true;
                     setStarted(true);
@@ -143,15 +155,36 @@ export const Scanner = ({eventos = [], setEventos}) => {
                         </button>
                     )}
 
-                    {scannedResult && (
-                        <motion.p
-                            className="resultado"
+                    {/* Sección para mostrar el resultado del escaneo */}
+                    {scanStatus.message && (
+                        <motion.div
+                            className={`scan-status ${scanStatus.type}`}
                             initial={{ scale: 0.5, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 20 }}
                         >
-                            {scannedResult}
-                        </motion.p>
+                            <p>{scanStatus.message}</p>
+                        </motion.div>
+                    )}
+
+                    {/* Tarjeta con los datos del participante verificado */}
+                    {verifiedParticipant && (
+                        <motion.div
+                            className="participant-card"
+                            initial={{ y: 50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                        >
+                            <h3>Participante Verificado</h3>
+                            <p><strong>Nombre:</strong> {verifiedParticipant.nombre} {verifiedParticipant.apellido}</p>
+                            <p><strong>DNI:</strong> {verifiedParticipant.dni}</p>
+                            <p><strong>Email:</strong> {verifiedParticipant.email}</p>
+                            <p><strong>Estado:</strong> {verifiedParticipant.estadoEntrada}</p>
+                            <button
+                                onClick={resetScanResult}
+                                className="btn"
+                            >
+                                Aceptar
+                            </button>
+                        </motion.div>
                     )}
                 </div>
             </motion.div>

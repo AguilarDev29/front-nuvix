@@ -1,7 +1,10 @@
+const BASE_PRUEBA = "http://localhost:8080"
+const API_BASE = "https://sistemadeverificacion.onrender.com";
+
 export const verifyCode = async (email, code) => {
     try {
         const response =
-            await fetch("https://sistemadeverificacion.onrender.com/v1/auth/verify-code", {
+            await fetch(`${BASE_PRUEBA}/v1/auth/verify-code`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

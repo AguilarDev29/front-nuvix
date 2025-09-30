@@ -85,3 +85,7 @@ button:hover {
   align-items: center;
   min-height: 100vh;
 }
+
+.message {
+    color: white;
+}

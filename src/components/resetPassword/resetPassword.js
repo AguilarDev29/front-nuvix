@@ -1,8 +1,11 @@
+const BASE_PRUEBA = "http://localhost:8080"
+const API_BASE = "https://sistemadeverificacion.onrender.com";
+
 export const resetPassword = async (email, newPassword) => {
 
     try {
         const response =
-            await fetch("https://sistemadeverificacion.onrender.com/v1/auth/change-password", {
+            await fetch(`${BASE_PRUEBA}/v1/auth/change-password`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

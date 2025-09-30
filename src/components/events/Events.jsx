@@ -7,6 +7,7 @@ import Footer from "../footer/Footer";
 import {Navbar} from "../navbar/Navbar";
 import "./handleEvents";
 import {createEvento, createParticipantsFromList, uploadPDF, uploadXLSX, finishEvento, listarEventos} from "./handleEvents";
+import {isDisabled} from "@testing-library/user-event/dist/utils";
 
 export function Events({eventos, setEventos}) {
     const [registrarEventoVisible, setRegistrarEventoVisible] = useState(false);
@@ -153,7 +154,6 @@ export function Events({eventos, setEventos}) {
             const fechaISO = new Date(fecha).toISOString();
             const eventoData = {
                 nombre: nombreNormalizado,
-                fechaEvento: fechaISO,
                 fecha: fechaISO
             };
 
@@ -359,13 +359,23 @@ export function Events({eventos, setEventos}) {
                                             try {
                                                 await createParticipantsFromList(ev.id, ev.listaParticipantes);
                                                 alert("¡Proceso de envío de invitaciones iniciado con éxito!");
+                                                // Actualiza el estado para marcar este evento como "invitaciones enviadas"
+                                                setEventos(eventosAnteriores =>
+                                                    eventosAnteriores.map(evento =>
+                                                        evento.id === ev.id
+                                                            ? { ...evento, invitacionesEnviadas: true }
+                                                            : evento
+                                                    )
+                                                );
                                             } catch (error) {
                                                 alert(`Error al enviar invitaciones: ${error.message}`);
                                             }
                                         }}
-                                        className={`btn ${(ev.participantes?.length || 0) === 0 ? "btn-pending" : ""}`}
+                                        className={`btn ${ev.invitacionesEnviadas ? "btn-disabled" : "btn-pending"}`}
+                                        disabled={ev.invitacionesEnviadas}
+
                                     >
-                                        {ev.participantes !== undefined && ev.participantes.length > 0 ? "Reenviar Invitaciones": "Enviar invitaciones"}
+                                        {ev.invitacionesEnviadas ? "Invitaciones enviadas" : "Enviar invitaciones"}
                                     </button>
                                     <button
                                         onClick={async () => {
