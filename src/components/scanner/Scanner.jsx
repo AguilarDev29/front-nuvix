@@ -4,8 +4,9 @@ import {Html5Qrcode} from "html5-qrcode";
 import { motion } from "framer-motion";
 import {Navbar} from "../navbar/Navbar";
 import Footer from "../footer/Footer";
-import {verifyEntrada} from "./handleScanner";
+import {verifyEntrada, verifySalida} from "./handleScanner";
 import {listarEventos} from "../events/handleEvents";
+import {ParticipantModal} from "./ParticipantModal";
 
 export const Scanner = ({eventos = [], setEventos}) => {
     const [started, setStarted] = useState(false);
@@ -15,6 +16,7 @@ export const Scanner = ({eventos = [], setEventos}) => {
     const qrCodeRegionRef = useRef(null);
     const html5QrCodeRef = useRef(null);
     const scannerActiveRef = useRef(false);
+    const [flagQR, setFlagQR] = useState("ENTRADA");
     // Usamos useEffect para cargar los eventos desde la API cuando el componente se monta.
     useEffect(() => {
         const cargarEventos = async () => {
@@ -79,26 +81,20 @@ export const Scanner = ({eventos = [], setEventos}) => {
                 stopScanner();
 
                 try {
-                    // 2. Enviar el código al backend y esperar la respuesta
-                    const response = await verifyEntrada(decodedText);
+                    const participantData = flagQR === "ENTRADA"
+                        ? await verifyEntrada(decodedText)
+                        : await verifySalida(decodedText);
 
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || `Error ${response.status}`);
+                    if (participantData && participantData.participante) {
+                        setVerifiedParticipant({
+                            participante: participantData.participante,
+                            estadoEntrada: participantData.estado
+                        });
+                        setScanStatus({ type: 'success', message: '¡Acceso verificado!' });
+                    } else {
+                        throw new Error('Respuesta de API inválida.');
                     }
-
-                    // 3. Si es OK, obtener los datos del participante
-                    const participantData = await response.json();
-
-                    // 4. Guardar los datos en el estado y mostrar mensaje de éxito
-                    setVerifiedParticipant({
-                        participante: participantData.participante,
-                        estadoEntrada: participantData.estado
-                    });
-                    setScanStatus({ type: 'success', message: '¡Acceso verificado!' });
-
                 } catch (error) {
-                    // 5. Si falla, mostrar mensaje de error
                     setScanStatus({ type: 'error', message: error.message || 'Código QR no válido o expirado.' });
                     setVerifiedParticipant(null);
                 }
@@ -124,7 +120,11 @@ export const Scanner = ({eventos = [], setEventos}) => {
                 transition={{ duration: 0.5 }}
             >
                 <div className="card">
-                    <h2>Escáner QR</h2>
+                    <h2>{flagQR === "ENTRADA" ? "Escanear Entrada" : "Escanear Salida"}</h2>
+                    <div className="btn-container">
+                        <button className="btn" onClick={() => setFlagQR("ENTRADA")}>Entrada</button>
+                        <button className="btn" onClick={() => setFlagQR("SALIDA")}>Salida</button>
+                    </div>
                     <select
                         id="select-evento"
                         value={eventoSeleccionado}
@@ -156,7 +156,7 @@ export const Scanner = ({eventos = [], setEventos}) => {
                     )}
 
                     {/* Sección para mostrar el resultado del escaneo */}
-                    {scanStatus.message && (
+                    {scanStatus.message && !verifiedParticipant && (
                         <motion.div
                             className={`scan-status ${scanStatus.type}`}
                             initial={{ scale: 0.5, opacity: 0 }}
@@ -166,25 +166,13 @@ export const Scanner = ({eventos = [], setEventos}) => {
                         </motion.div>
                     )}
 
-                    {/* Tarjeta con los datos del participante verificado */}
+                    {/* Modal con los datos del participante verificado */}
                     {verifiedParticipant && (
-                        <motion.div
-                            className="participant-card"
-                            initial={{ y: 50, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                        >
-                            <h3>Participante Verificado</h3>
-                            <p><strong>Nombre:</strong> {verifiedParticipant.nombre} {verifiedParticipant.apellido}</p>
-                            <p><strong>DNI:</strong> {verifiedParticipant.dni}</p>
-                            <p><strong>Email:</strong> {verifiedParticipant.email}</p>
-                            <p><strong>Estado:</strong> {verifiedParticipant.estadoEntrada}</p>
-                            <button
-                                onClick={resetScanResult}
-                                className="btn"
-                            >
-                                Aceptar
-                            </button>
-                        </motion.div>
+                        <ParticipantModal
+                            participant={verifiedParticipant.participante}
+                            estadoEntrada={verifiedParticipant.estadoEntrada}
+                            onClose={resetScanResult}
+                        />
                     )}
                 </div>
             </motion.div>
