@@ -7,33 +7,34 @@ import Footer from "../footer/Footer";
 import {verifyEntrada, verifySalida} from "./handleScanner";
 import {listarEventos} from "../events/handleEvents";
 import {ParticipantModal} from "./ParticipantModal";
+import {ErrorModal} from "./ErrorModal";
 
 export const Scanner = ({eventos = [], setEventos}) => {
     const [started, setStarted] = useState(false);
     const [eventoSeleccionado, setEventoSeleccionado] = useState("");
-    const [verifiedParticipant, setVerifiedParticipant] = useState(null); // Estado para el participante verificado
-    const [scanStatus, setScanStatus] = useState({ type: '', message: '' }); // Estado para mensajes de feedback
+    const [verifiedParticipant, setVerifiedParticipant] = useState(null);
+    const [errorModalMessage, setErrorModalMessage] = useState("");
     const qrCodeRegionRef = useRef(null);
     const html5QrCodeRef = useRef(null);
     const scannerActiveRef = useRef(false);
     const [flagQR, setFlagQR] = useState("ENTRADA");
-    // Usamos useEffect para cargar los eventos desde la API cuando el componente se monta.
+
     useEffect(() => {
         const cargarEventos = async () => {
             try {
                 const eventosObtenidos = await listarEventos();
-                setEventos(eventosObtenidos || []); // Actualiza el estado con los datos
+                setEventos(eventosObtenidos || []);
             } catch (error) {
                 console.error("Error al cargar eventos en el scanner:", error);
+                setErrorModalMessage("No se pudieron cargar los eventos.");
             }
         };
         cargarEventos();
-    }, [setEventos]); // El efecto se ejecuta si la función setEventos cambia.
+    }, [setEventos]);
 
-    // Función para limpiar el estado del participante y los mensajes
     const resetScanResult = () => {
         setVerifiedParticipant(null);
-        setScanStatus({ type: '', message: '' });
+        setErrorModalMessage("");
     };
 
     const stopScanner = async () => {
@@ -65,11 +66,11 @@ export const Scanner = ({eventos = [], setEventos}) => {
 
     const startScanner = () => {
         if (!eventoSeleccionado) {
-            alert("Debes seleccionar un evento antes de escanear.");
+            setErrorModalMessage("Debes seleccionar un evento antes de escanear.");
             return;
         }
 
-        resetScanResult(); // Limpia resultados anteriores antes de un nuevo escaneo
+        resetScanResult();
 
         stopScanner().finally(() => {
             const config = { fps: 10, qrbox: 250 };
@@ -77,9 +78,7 @@ export const Scanner = ({eventos = [], setEventos}) => {
             html5QrCodeRef.current = html5QrCode;
 
             const qrCodeSuccessCallback = async (decodedText) => {
-                // Detener el escáner inmediatamente para evitar múltiples lecturas
                 stopScanner();
-
                 try {
                     const participantData = flagQR === "ENTRADA"
                         ? await verifyEntrada(decodedText)
@@ -90,12 +89,11 @@ export const Scanner = ({eventos = [], setEventos}) => {
                             participante: participantData.participante,
                             estadoEntrada: participantData.estado
                         });
-                        setScanStatus({ type: 'success', message: '¡Acceso verificado!' });
                     } else {
-                        throw new Error('Respuesta de API inválida.');
+                        throw new Error('Respuesta de API inválida o datos del participante no encontrados.');
                     }
                 } catch (error) {
-                    setScanStatus({ type: 'error', message: error.message || 'Código QR no válido o expirado.' });
+                    setErrorModalMessage(error.message || 'Código QR no válido o expirado.');
                     setVerifiedParticipant(null);
                 }
             };
@@ -105,8 +103,15 @@ export const Scanner = ({eventos = [], setEventos}) => {
                     scannerActiveRef.current = true;
                     setStarted(true);
                 })
-                .catch((err) => console.error("No se pudo iniciar el escáner", err));
+                .catch((err) => {
+                    console.error("No se pudo iniciar el escáner", err);
+                    setErrorModalMessage("No se pudo iniciar el escáner. Asegúrate de dar permisos para usar la cámara.");
+                });
         });
+    };
+
+    const closeErrorModal = () => {
+        setErrorModalMessage("");
     };
 
     return (
@@ -155,18 +160,8 @@ export const Scanner = ({eventos = [], setEventos}) => {
                         </button>
                     )}
 
-                    {/* Sección para mostrar el resultado del escaneo */}
-                    {scanStatus.message && !verifiedParticipant && (
-                        <motion.div
-                            className={`scan-status ${scanStatus.type}`}
-                            initial={{ scale: 0.5, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                        >
-                            <p>{scanStatus.message}</p>
-                        </motion.div>
-                    )}
+                    <ErrorModal message={errorModalMessage} onClose={closeErrorModal} />
 
-                    {/* Modal con los datos del participante verificado */}
                     {verifiedParticipant && (
                         <ParticipantModal
                             participant={verifiedParticipant.participante}

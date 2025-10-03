@@ -88,12 +88,10 @@ export const createParticipantsFromList = async (eventoId, filePathLike) => {
     try {
         const token = localStorage.getItem("token");
 
-        // Normaliza filePath para manejar tanto strings como objetos de forma más concisa.
         const filePath = typeof filePathLike === 'string'
             ? filePathLike
             : (filePathLike?.filePath ?? filePathLike?.path ?? filePathLike?.url ?? '');
 
-        // Construye la URL de forma segura usando la API URL.
         const url = new URL(`${BASE_PRUEBA}/v1/participantes/create/${encodeURIComponent(eventoId)}`);
         if (filePath) {
             url.searchParams.set("filePath", filePath);
@@ -105,17 +103,14 @@ export const createParticipantsFromList = async (eventoId, filePathLike) => {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            // El cuerpo está vacío porque la información principal (filePath) va en la URL.
             body: JSON.stringify({})
         });
 
         if (!response.ok) {
             const errorText = await response.text();
-            // Lanza un error descriptivo para facilitar la depuración.
             throw new Error(`Fallo al crear participantes: ${response.status} - ${errorText}`);
         }
 
-        // Maneja la respuesta de forma flexible, aceptando JSON o texto.
         const contentType = response.headers.get("content-type") || "";
         if (contentType.includes("application/json")) {
             return await response.json();
@@ -124,7 +119,35 @@ export const createParticipantsFromList = async (eventoId, filePathLike) => {
 
     } catch (e) {
         console.error("Error en createParticipantsFromList:", e);
-        // Re-lanza el error para que el código que llama a la función pueda manejarlo.
+        throw e;
+    }
+};
+
+export const resendInvitations = async (eventoId) => {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${BASE_PRUEBA}/v1/participantes/resend-emails/${eventoId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({})
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Fallo al reenviar invitaciones: ${response.status} - ${errorText}`);
+        }
+
+        const contentType = response.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+            return await response.json();
+        }
+        return await response.text();
+
+    } catch (e) {
+        console.error("Error in resendInvitations:", e);
         throw e;
     }
 };
@@ -153,6 +176,26 @@ export const finishEvento = async (eventoId) => {
     }
 }
 
+export const getParticipantesByEvento = async (eventoId) => {
+    try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${BASE_PRUEBA}/v1/participantes/evento/${eventoId}`, {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Error al listar participantes: ${response.status} - ${errorText}`);
+        }
+
+        return await response.json();
+    } catch (e) {
+        console.error(`Error al obtener participantes para el evento ${eventoId}:`, e);
+        return [];
+    }
+};
+
 export const listarEventos = async () => {
     try{
         const token = localStorage.getItem("token");
@@ -163,12 +206,18 @@ export const listarEventos = async () => {
         });
 
         if (!response.ok) {
-            // Lanza un error con el mensaje del backend si es posible
             const errorText = await response.text();
             throw new Error(`Error al listar eventos: ${response.status} - ${errorText}`);
         }
 
-        return await response.json();
+        const eventos = await response.json();
+
+        return await Promise.all(
+            eventos.map(async (evento) => {
+                const participantes = await getParticipantesByEvento(evento.id);
+                return {...evento, participantes: participantes || []};
+            })
+        );
     } catch(e){
         console.error(e);
         throw e;

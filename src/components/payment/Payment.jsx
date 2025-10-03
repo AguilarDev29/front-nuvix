@@ -36,16 +36,25 @@ export function Payment() {
                             Con tu licencia activa podrás gestionar el sistema de control de
                             ingresos y egresos de tus eventos sin limitaciones.
                         </p>
+                        <select id="plan" className="select-menu">
+                            <option value="">-- Selecciona una licencia --</option>
+                            <option value="individual">Licencia Individual</option>
+                            <option value="individuo">Plan Básico</option>
+                            <option value="profesional">Plan Profesional</option>
+                            <option value="corporativo">Plan Corporativo</option>
+                        </select>
 
                         <div className="license-options">
                             {/* Opción de Licencia Mensual */}
-                            <div className="license-option" onClick={() => createPreference("Licencia Mensual", 1000)}>
+                            <div className="license-option"
+                                 onClick={() => createPreference("Licencia Mensual", 1000)}>
                                 <h2>Licencia Mensual</h2>
                                 <p>$1000 ARS</p>
                             </div>
 
                             {/* Opción de Licencia por Evento */}
-                            <div className="license-option" onClick={() => createPreference("Licencia por Evento", 500)}>
+                            <div className="license-option"
+                                 onClick={() => createPreference("Licencia por Evento", 500)}>
                                 <h2>Licencia por Evento</h2>
                                 <p>$500 ARS</p>
                             </div>

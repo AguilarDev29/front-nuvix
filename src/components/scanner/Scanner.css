@@ -113,11 +113,6 @@ h2 {
   font-weight: bold;
 }
 
-
-.participant-card {
-    color: white;
-}
-
 @media (max-width: 768px) {
 
     .card {
