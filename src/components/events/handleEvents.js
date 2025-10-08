@@ -4,7 +4,7 @@ const API_BASE = "https://sistemadeverificacion.onrender.com"; // unifica host
 export const createEvento = async (event) => {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${BASE_PRUEBA}/v1/eventos`, {
+        const response = await fetch(`${API_BASE}/v1/eventos`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -39,7 +39,7 @@ export const uploadXLSX = async (eventoId, file) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch(`${BASE_PRUEBA}/v1/eventos/add/lista/${eventoId}`, {
+        const response = await fetch(`${API_BASE}/v1/eventos/add/lista/${eventoId}`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` },
             body: formData
@@ -66,7 +66,7 @@ export const uploadPDF = async (eventoId, file) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch(`${BASE_PRUEBA}/v1/eventos/add/itinerario/${eventoId}`, {
+        const response = await fetch(`${API_BASE}/v1/eventos/add/itinerario/${eventoId}`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` },
             body: formData
@@ -92,7 +92,7 @@ export const createParticipantsFromList = async (eventoId, filePathLike) => {
             ? filePathLike
             : (filePathLike?.filePath ?? filePathLike?.path ?? filePathLike?.url ?? '');
 
-        const url = new URL(`${BASE_PRUEBA}/v1/participantes/create/${encodeURIComponent(eventoId)}`);
+        const url = new URL(`${API_BASE}/v1/participantes/create/${encodeURIComponent(eventoId)}`);
         if (filePath) {
             url.searchParams.set("filePath", filePath);
         }
@@ -126,7 +126,7 @@ export const createParticipantsFromList = async (eventoId, filePathLike) => {
 export const resendInvitations = async (eventoId) => {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${BASE_PRUEBA}/v1/participantes/resend-emails/${eventoId}`, {
+        const response = await fetch(`${API_BASE}/v1/participantes/resend-emails/${eventoId}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -156,7 +156,7 @@ export const finishEvento = async (eventoId) => {
     try{
         const token = localStorage.getItem("token");
 
-        const response = await fetch(`${BASE_PRUEBA}/v1/eventos/finish/${eventoId}`, {
+        const response = await fetch(`${API_BASE}/v1/eventos/finish/${eventoId}`, {
             method: "PATCH",
             headers: { "Authorization": `Bearer ${token}` },
             body: JSON.stringify({})
@@ -179,7 +179,7 @@ export const finishEvento = async (eventoId) => {
 export const getParticipantesByEvento = async (eventoId) => {
     try {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${BASE_PRUEBA}/v1/participantes/evento/${eventoId}`, {
+        const response = await fetch(`${API_BASE}/v1/participantes/evento/${eventoId}`, {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -200,7 +200,7 @@ export const listarEventos = async () => {
     try{
         const token = localStorage.getItem("token");
 
-        const response = await fetch(`${BASE_PRUEBA}/v1/eventos/all/active`, {
+        const response = await fetch(`${API_BASE}/v1/eventos/all/active`, {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         });

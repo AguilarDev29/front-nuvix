@@ -1,6 +1,6 @@
 export const verifyEntrada = async (code) => {
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:8080/v1/entradas/use/entrada/${code}`, {
+    const response = await fetch(`https://sistemadeverificacion.onrender.com/v1/entradas/use/entrada/${code}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -18,7 +18,7 @@ export const verifyEntrada = async (code) => {
 
 export const verifySalida = async (code) => {
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:8080/v1/entradas/use/salida/${code}`, {
+    const response = await fetch(`https://sistemadeverificacion.onrender.com/v1/entradas/use/salida/${code}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

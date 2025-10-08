@@ -5,7 +5,7 @@ export const resetPassword = async (email, newPassword) => {
 
     try {
         const response =
-            await fetch(`${BASE_PRUEBA}/v1/auth/change-password`, {
+            await fetch(`${API_BASE}/v1/auth/change-password`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
