@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NuvixLogo from "../../img/logo2-Photoroom.png";
 import './Navbar.css';
@@ -38,11 +38,11 @@ export const Navbar = React.memo(() => {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                 >
-                    <Link to="/" className="no-underline">
+                    <a href="/" className="no-underline">
                         <div className="logo-container">
                             <img src={NuvixLogo} alt="Nuvix Logo" className="logo-icon-img" />
                         </div>
-                    </Link>
+                    </a>
                 </motion.div>
 
                 <div className="mobile-menu-icon" onClick={toggleMobileMenu}>
@@ -51,13 +51,13 @@ export const Navbar = React.memo(() => {
 
                 <ul className={`navbar-links ${isMobileMenuOpen ? "active" : ""}`}>
                     <li>
-                        <Link to="/scanner" className="nav-link">Escáner</Link>
+                        <a href="/scanner" className="nav-link">Escáner</a>
                     </li>
                     <li>
-                        <Link to="/events" className="nav-link">Eventos</Link>
+                        <a href="/events" className="nav-link">Eventos</a>
                     </li>
                     <li>
-                        <Link to="/records" className="nav-link">Registros</Link>
+                        <a href="/records" className="nav-link">Registros</a>
                     </li>
                     <li>
                         <button onClick={handleLogout} className="nav-link logout-btn">

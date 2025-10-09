@@ -2,7 +2,6 @@ import './Home.css';
 import {loadSlim} from "tsparticles-slim";
 import Particles from "react-tsparticles";
 import {motion} from "framer-motion";
-import {Link} from "react-router-dom";
 import "./Home.css"
 
 export function Home() {
@@ -107,9 +106,9 @@ export function Home() {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, delay: 1.5 }}
                 >
-                    <Link to={redirectToLogin()} className="btn home-btn">
+                    <a href={redirectToLogin()} className="btn home-btn">
                         Comenzar
-                    </Link>
+                    </a>
                 </motion.div>
             </motion.div>
         </div>

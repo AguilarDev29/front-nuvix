@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Link, useLocation, useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {resetPassword} from "./resetPassword";
 import '../login/Login.css';
 
@@ -34,9 +34,9 @@ export function ResetPassword() {
                     />
                     <button type="submit">Restablecer</button>
                 </form>
-                <Link className="link" to={"/login"}>
+                <a className="link" href="/login">
                     Volver al login
-                </Link>
+                </a>
                 <p className="message">{message}</p>
             </div>
         </div>
