@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useLocation, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {verifyCode} from "./verifyCode";
 import '../login/Login.css';
 export function VerifyCode() {
@@ -36,9 +36,9 @@ export function VerifyCode() {
                         <button type="submit">Enviar código</button>
                     </form>
                     <div className="links-container">
-                        <a className="link" href="/login">
+                        <Link className="link" to={"/login"}>
                             Volver al login
-                        </a>
+                        </Link>
                     </div>
 
                     <p className="message">{message}</p>

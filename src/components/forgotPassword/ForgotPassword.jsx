@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {forgotPassword} from './forgotPassword.js';
 import '../login/Login.css';
 
@@ -35,9 +35,9 @@ export function ForgotPassword() {
                         <button type="submit">Enviar código</button>
                     </form>
                     <div className="links-container">
-                        <a className="link" href="/login">
+                        <Link className="link" to={"/login"}>
                             Volver al login
-                        </a>
+                        </Link>
                     </div>
 
                     <p className="message">{message}</p>

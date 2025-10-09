@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {authenticateUser} from "./authenticateUser";
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import './Login.css';
 
 export function Login() {
@@ -43,12 +43,12 @@ export function Login() {
                         <button type="submit">Entrar</button>
                     </form>
                     <div className="links-container">
-                        <a className="link" href="/register">
+                        <Link className="link" to={"/register"}>
                             ¿No tienes cuenta? Regístrate
-                        </a>
-                        <a className="link" href="/forgot-password">
+                        </Link>
+                        <Link className="link" to={"/forgot-password"}>
                             ¿Olvidaste tu contraseña?
-                        </a>
+                        </Link>
                     </div>
 
                     <p className="message">{message}</p>
