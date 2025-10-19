@@ -1,7 +1,6 @@
 const API_BASE = "https://sistemadeverificacion.onrender.com";
 
 export const registerUser = async (email, password) => {
-
     try {
         const response = await fetch(`${API_BASE}/v1/auth/register`, {
             method: "POST",
@@ -12,17 +11,27 @@ export const registerUser = async (email, password) => {
                 email: email,
                 password: password
             })
-        })
-        const data = await response.json();
+        });
 
-        if (!response.ok) {
-            if (response.status === 409) {
-                return { success: false, message: "El correo electrónico ya está registrado." };
-            }
-            return { success: false, message: data.message || "Error al registrar el usuario" };
+        if (response.ok) {
+            const data = await response.json();
+            return { success: true, token: data.token, message: "Registro exitoso" };
         }
-        return { success: true, token: data.token, message: "Registro exitoso" };
-    }catch (e){
-        return { success: false, message: e.message || "Error de red" };
+
+        if (response.status === 409) {
+            return { success: false, message: "El correo electrónico ya está en uso." };
+        }
+
+        // For other errors, try to parse the body for a message.
+        try {
+            const errorData = await response.json();
+            return { success: false, message: errorData.message || "Ha ocurrido un error durante el registro." };
+        } catch (error) {
+            // If body is not JSON or empty
+            return { success: false, message: "Ha ocurrido un error inesperado en el servidor." };
+        }
+
+    } catch (e) {
+        return { success: false, message: "Error de red. Verifique su conexión e intente de nuevo." };
     }
-}
+};
