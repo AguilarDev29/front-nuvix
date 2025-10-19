@@ -7,7 +7,7 @@ import Footer from "../footer/Footer";
 import {verifyEntrada, verifySalida} from "./handleScanner";
 import {listarEventos} from "../events/handleEvents";
 import {ParticipantModal} from "./ParticipantModal";
-import {ErrorModal} from "./ErrorModal";
+import {ErrorModal} from "../errorModal/ErrorModal";
 
 export const Scanner = ({eventos = [], setEventos}) => {
     const [started, setStarted] = useState(false);

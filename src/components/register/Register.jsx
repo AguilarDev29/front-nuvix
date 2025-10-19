@@ -1,25 +1,34 @@
 import {useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 
-import registerUser from "./registerUser";
+import {registerUser} from "./registerUser";
+import {ErrorModal} from "../errorModal/ErrorModal";
 import '../login/Login.css';
 
 export function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
-    const handleRegister = (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-        const result = registerUser(email, password);
+        const result = await registerUser(email, password);
         if (result.success) {
             setMessage(" Registro exitoso, ahora puedes iniciar sesión");
             navigate("/login");
-        } else setMessage(" " + result.message);
+        } else {
+            setError(result.message);
+        }
+    };
+
+    const handleCloseErrorModal = () => {
+        setError(null);
     };
 
     return (
         <>
+            <ErrorModal message={error} onClose={handleCloseErrorModal} />
             <div className="auth-container">
                 <div className="form-card">
                     <h2>Registro</h2>

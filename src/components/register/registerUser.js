@@ -1,5 +1,4 @@
-const BASE_PRUEBA = "http://localhost:8080"
-const API_BASE = "https://sistemadeverificacion.onrender.com";
+const API_BASE = "http://localhost:8080/api";
 
 export const registerUser = async (email, password) => {
 
@@ -17,6 +16,9 @@ export const registerUser = async (email, password) => {
         const data = await response.json();
 
         if (!response.ok) {
+            if (response.status === 409) {
+                return { success: false, message: "El correo electrónico ya está registrado." };
+            }
             return { success: false, message: data.message || "Error al registrar el usuario" };
         }
         return { success: true, token: data.token, message: "Registro exitoso" };
@@ -24,4 +26,3 @@ export const registerUser = async (email, password) => {
         return { success: false, message: e.message || "Error de red" };
     }
 }
-export default registerUser;
