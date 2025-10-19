@@ -1,4 +1,3 @@
-const BASE_PRUEBA = "http://localhost:8080"
 const API_BASE = "https://sistemadeverificacion.onrender.com";
 
 export const verifyCode = async (email, code) => {
