@@ -22,13 +22,13 @@ export const registerUser = async (email, password) => {
             return { success: false, message: "El correo electrónico ya está en uso." };
         }
 
-        // For other errors, try to parse the body for a message.
+        // For other non-ok responses, try to parse json, but have a fallback.
         try {
             const errorData = await response.json();
-            return { success: false, message: errorData.message || "Ha ocurrido un error durante el registro." };
-        } catch (error) {
-            // If body is not JSON or empty
-            return { success: false, message: "Ha ocurrido un error inesperado en el servidor." };
+            return { success: false, message: errorData.message || "Error al registrar el usuario" };
+        } catch (e) {
+            // The response body was not valid JSON.
+            return { success: false, message: "Ocurrió un error inesperado del servidor." };
         }
 
     } catch (e) {
