@@ -1,12 +1,26 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import NuvixLogo from "../../img/logo2-Photoroom.png";
+import { getUserData } from "../../services/user";
 import './Navbar.css';
 
 export const Navbar = React.memo(() => {
     const navigate = useNavigate();
     const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [userRole, setUserRole] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userData = await getUserData();
+            if (userData) {
+                setUserRole(userData.rol);
+                localStorage.setItem("userRole", userData.rol); // Keep localStorage up-to-date
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const handleLogout = useCallback(async () => {
         if (window.stopScannerGlobal && typeof window.stopScannerGlobal === "function") {
@@ -18,12 +32,15 @@ export const Navbar = React.memo(() => {
         }
         alert("Sesión cerrada. Redirigiendo a la página de inicio.");
         localStorage.removeItem("token");
+        localStorage.removeItem("userRole");
         navigate("/");
     }, [navigate]);
 
     const toggleMobileMenu = useCallback(() => {
         setMobileMenuOpen(prev => !prev);
     }, []);
+
+    const isTrialUser = userRole === 'USER_TRIAL';
 
     return (
         <motion.nav
@@ -54,7 +71,11 @@ export const Navbar = React.memo(() => {
                         <Link to="/scanner" className="nav-link">Escáner</Link>
                     </li>
                     <li>
-                        <Link to="/events" className="nav-link">Eventos</Link>
+                        {isTrialUser ? (
+                            <span className="nav-link disabled-link" title="Actualiza tu plan para acceder a esta función">Eventos</span>
+                        ) : (
+                            <Link to="/events" className="nav-link">Eventos</Link>
+                        )}
                     </li>
                     <li>
                         <Link to="/records" className="nav-link">Registros</Link>

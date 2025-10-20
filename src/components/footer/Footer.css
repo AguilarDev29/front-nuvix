@@ -98,3 +98,12 @@
         text-align: center;
     }
 }
+
+.disabled-link {
+    color: #999;
+    cursor: not-allowed;
+}
+
+.disabled-link:hover {
+    color: #999;
+}

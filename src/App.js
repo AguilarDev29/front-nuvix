@@ -19,22 +19,33 @@ function App() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
+        const userRole = localStorage.getItem("userRole");
         const path = location.pathname;
 
         const protectedPaths = ["/scanner", "/events", "/records", "/payment"];
-        const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password"]; 
+        const publicPaths = ["/", "/login", "/register", "/forgot-password", "/reset-password"];
 
+        // Redirect to login if not authenticated and trying to access a protected route
         if (!token && protectedPaths.includes(path)) {
             if (path !== "/login") navigate("/login", { replace: true });
             return;
         }
 
+        // Redirect to scanner if authenticated and trying to access a public route
         if (token && publicPaths.includes(path)) {
             if (path !== "/scanner") {
                 navigate("/scanner", { replace: true });
             }
             return;
         }
+
+        // Redirect trial users away from the events page
+        if (userRole === 'USER_TRIAL' && path === '/events') {
+            alert("La sección de eventos no está disponible en la versión de prueba. Actualiza tu plan para acceder.");
+            navigate("/scanner", { replace: true });
+            return;
+        }
+
     }, [location, navigate]);
 
     return (

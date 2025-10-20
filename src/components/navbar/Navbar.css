@@ -155,3 +155,11 @@
         display: block;
     }
 }
+
+.nav-link.disabled-link:hover {
+    padding: 0.5rem 1rem;
+    color: #555555;
+    background-color: transparent;
+    transform: none;
+    cursor: not-allowed;
+}

@@ -1,7 +1,24 @@
-import {Link} from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getUserData } from "../../services/user";
 import './Footer.css';
 
 export const Footer = () => {
+    const [userRole, setUserRole] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userData = await getUserData();
+            if (userData) {
+                setUserRole(userData.rol);
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    const isTrialUser = userRole === 'USER_TRIAL';
+
     return (
         <footer className="footer">
             <div className="footer-content">
@@ -20,7 +37,13 @@ export const Footer = () => {
                     <ul className="footer-links">
                         {/* Opciones de navegación actualizadas */}
                         <li><Link to="/scanner">Escáner</Link></li>
-                        <li><Link to="/events">Eventos</Link></li>
+                        <li>
+                            {isTrialUser ? (
+                                <span className="disabled-link" title="Actualiza tu plan para acceder a esta función">Eventos</span>
+                            ) : (
+                                <Link to="/events">Eventos</Link>
+                            )}
+                        </li>
                         <li><Link to="/records">Registros</Link></li>
                         <li><Link to="/payment">Comprar Licencia</Link></li>
                     </ul>

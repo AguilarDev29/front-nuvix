@@ -2,6 +2,7 @@ import {useState} from "react";
 import {authenticateUser} from "./authenticateUser";
 import {Link, useNavigate} from "react-router-dom";
 import './Login.css';
+import {ErrorModal} from "../errorModal/ErrorModal";
 
 export function Login() {
     const [email, setEmail] = useState("");
@@ -12,12 +13,17 @@ export function Login() {
         e.preventDefault();
         const result = await authenticateUser(email, password);
 
-        if(!result.success)
+        if(!result.success) {
             setMessage("Error al autenticar el usuario");
-        else{
+        } else {
             localStorage.setItem("token", result.token);
+            localStorage.setItem("userRole", result.rol);
             navigate("/scanner");
         }
+    };
+
+    const closeErrorModal = () => {
+        setMessage("");
     };
 
     return (
@@ -51,7 +57,7 @@ export function Login() {
                         </Link>
                     </div>
 
-                    <p className="message">{message}</p>
+                    <ErrorModal message={message} onClose={closeErrorModal} />
                 </div>
             </div>
         </>
